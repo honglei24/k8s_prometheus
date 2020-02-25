@@ -1,0 +1,67 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+rule_files:
+  - 'prometheus.rules.yml'
+  # - "first.rules"
+  # - "second.rules"
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: file
+    file_sd_configs:
+      - file: ['/prometheus/podinfo.yaml']
+  - job_name: myexporter
+    basic_auth:
+      username: admin
+      password: 123456
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['192.168.2.8:32000']
+        labels:
+          group: 'production'
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+    - api_server: https://192.168.2.8:6443
+      role: pod
+      tls_config:
+        ca_file: /prometheus/ca.crt
+        insecure_skip_verify: true
+      bearer_token_file: /prometheus/token
+    relabel_configs:
+    - action: keep
+      regex: true
+      source_labels:
+      - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+    - action: replace
+      regex: (.+)
+      source_labels:
+      - __meta_kubernetes_pod_annotation_prometheus_io_path
+      target_label: __metrics_path__
+    - action: replace
+      regex: ([^:]+)(?::\d+)?;(\d+)
+      replacement: $1:$2
+      source_labels:
+      - __address__
+      - __meta_kubernetes_pod_annotation_prometheus_io_port
+      target_label: __address__
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    - action: replace
+      source_labels:
+      - __meta_kubernetes_namespace
+      target_label: kubernetes_namespace
+    - action: replace
+      source_labels:
+      - __meta_kubernetes_pod_name
+      target_label: kubernetes_pod_name
+
+
+#remote_write:                
+#  - url: https://cidata-prometheus-sh.oneitfarm.com/tenant/test-honglei/api/prom/push                              
+#    tls_config:                          
+#      insecure_skip_verify: true
+#

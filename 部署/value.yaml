@@ -1,0 +1,7 @@
+serverFiles:
+  prometheus.yml:
+    remote_write:                
+      - url: https://cidata-prometheus-sh.oneitfarm.com/tenant/test-honglei/api/prom/push                              
+        tls_config:                          
+          insecure_skip_verify: true
+

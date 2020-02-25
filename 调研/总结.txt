@@ -1,0 +1,5 @@
+配置项总结
+kubernetes-service-endpoints和kubernetes-pods采集应用中metrics，当然并不是所有的都提供了metrics接口。
+kubernetes-ingresses 和kubernetes-services 健康监测服务和ingress健康的状态
+kubernetes-cadvisor 和 kubernetes-nodes，通过发现node，监控node 和容器的cpu等指标
+

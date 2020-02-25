@@ -1,0 +1,46 @@
+   groups:
+    - name: node_utilization
+      rules:
+      - alert: NodeFilesystemUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"} ) / node_filesystem_size_bytes{mountpoint="/"} * 100> 80
+        for: 5m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High Filesystem usage detected"
+          description: "{{$labels.instance}}: Filesystem usage is above 80% (current value is: {{ $value }}"
+      - alert: NodeMemoryUsage
+        expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes )) / node_memory_MemTotal_bytes * 100 > 80
+        for: 5m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High Memory usage detected"
+          description: "{{$labels.instance}}: Memory usage is above 80% (current value is: {{ $value }}"
+      - alert: NodeCPUUsage
+        expr: (100 - avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High CPU usage detected"
+          description: "{{$labels.instance}}: CPU usage is above 80% (current value is: {{ $value }}"
+      - alert: NodeNICUsage
+        expr: ((rate(node_network_receive_bytes_total{device=~"en.."}[5m]) * 8 / 1024 /1024 /1000) * 100) > 70
+        for: 5m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High network card usage detected"
+          description: "{{$labels.instance}}: Networ card usage is above 70% (current value is: {{ $value }}"
+      - alert: Node_exporter
+        expr: (up{job="kubernetes-nodes"}) != 1
+        for: 5m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: Node status abnormal detected"
+          description: "{{$labels.instance}}: Node status is abnormal."
+
+
+

@@ -1,0 +1,41 @@
+serverFiles:
+  prometheus.yml:
+    remote_write:
+      - url: https://cidata-prometheus-sh.oneitfarm.com/tenant/test-honglei/api/prom/push                              
+        tls_config:
+          insecure_skip_verify: true
+  alerts:
+    groups:
+      - name: test-rule
+        rules:
+        - alert: NodeMemoryUsage
+          expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 40
+          for: 15s
+          labels:
+            team: node
+          annotations:
+            summary: "机器 {{ $labels.instance }} 内存利用率高于40%"
+
+alertmanagerFiles:
+  alertmanager.yml:
+    global:
+      resolve_timeout: 2m
+      wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+      wechat_api_secret: '5CQDpB8Nt96ATfUIfcHlr1X7oUI6H0FxTCjesesDQKE'
+      wechat_api_corp_id: 'ww9dbfed83582c0e44'
+
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 10m
+      receiver: 'webhook'
+    receivers:
+    - name: 'webhook'
+      webhook_configs:
+      - url: 'http://192.168.2.8:5000/send'
+        send_resolved: true
+
+alertmanager:
+  extraArgs: 
+    log.level: debug
