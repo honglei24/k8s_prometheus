@@ -1,5 +1,5 @@
    groups:
-    - name: node_utilization
+    - name: node
       rules:
       - alert: NodeFilesystemUsage
         expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"} ) / node_filesystem_size_bytes{mountpoint="/"} * 100> 80
@@ -33,6 +33,14 @@
         annotations:
           summary: "{{$labels.instance}}: High network card usage detected"
           description: "{{$labels.instance}}: Networ card usage is above 70% (current value is: {{ $value }}"
+      - alert: NodeLoadAverager
+        expr: node_load1 > 10
+        for: 2m
+        labels:
+          team: node
+        annotations:
+          summary: "{{$labels.instance}}: High load average detected"
+          description: "{{$labels.instance}}: Load average is above 10 for at least 2 minute (current value is: {{ $value }}"
       - alert: Node_exporter
         expr: (up{job="kubernetes-nodes"}) != 1
         for: 5m
@@ -41,6 +49,38 @@
         annotations:
           summary: "{{$labels.instance}}: Node status abnormal detected"
           description: "{{$labels.instance}}: Node status is abnormal."
-
-
+    - name: component
+      rules:
+      - alert: DockerDaemon
+        expr: kube_node_spec_taint{effect="NoExecute"} == 1
+        for: 5m
+        labels:
+          team: component
+        annotations:
+          summary: "{{$labels.node}}: Docker daemon is down"
+          description: "{{$labels.node}}: Docker daemon is down"
+      - alert: APIServerRequestsTotal
+        expr: increase(apiserver_request_total[5m]) > 10000
+        for: 5m
+        labels:
+          team: component
+        annotations:
+          summary: "APIServer HTTP requests abnormal detected"
+          description: "{{$labels.client}}: HTTP Requests in the 5 minute is above 10000 (current value is: {{ $value }}"
+      - alert: APIServerRequestsTotal
+        expr: increase(apiserver_request_count{code!~"2.."}[5m]) > 100
+        for: 5m
+        labels:
+          team: component
+        annotations:
+          summary: "{{$labels.client}}: HTTP request error detected"
+          description: "{{$labels.client}}: More than 100 HTTP request errors in the past 5 minutes (current value is: {{ $value }}"
+      - alert: APIServerRequestsDuration
+        expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job="kubernetes-apiservers",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|PROXY|CONNECT"}[5m])) without(instance, pod)) > 4
+        for: 5m
+        labels:
+          team: component
+        annotations:
+          summary: "HTTP request latency detected"
+          description: "{{$labels.group}} {{$labels.resoure}}: HTTP request latency is greater than 4s in the past 5 minutes (current value is: {{ $value }}"
 
