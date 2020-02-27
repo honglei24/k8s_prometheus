@@ -1,7 +1,7 @@
     global:
       resolve_timeout: 2m
       wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
-      wechat_api_secret: '5CQDpB8Nt96ATfUIfcHlr1X7oUI6H0FxTCjesesDQKE'
+      wechat_api_secret: '<wechat_api_secret>'
       wechat_api_corp_id: 'ww9dbfed83582c0e44'
 
     route:
@@ -17,5 +17,5 @@
         #to_party: '1'
         to_user: '@all'
         agent_id: '1000002'
-        api_secret: '5CQDpB8Nt96ATfUIfcHlr1X7oUI6H0FxTCjesesDQKE'
+        api_secret: '<wechat_api_secret>'
         corp_id: 'ww9dbfed83582c0e44'

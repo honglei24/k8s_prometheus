@@ -13,5 +13,5 @@
     receivers:
     - name: default-receiver
       email_configs:
-      - to: '226596391@qq.com'
+      - to: 'test@xxx.com'
 
