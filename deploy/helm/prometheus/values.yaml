@@ -635,13 +635,20 @@ server:
   global:
     ## How frequently to scrape targets by default
     ##
-    scrape_interval: 1m
+    scrape_interval: 30s
     ## How long until a scrape request times out
     ##
     scrape_timeout: 10s
     ## How frequently to evaluate rules
     ##
-    evaluation_interval: 1m
+    evaluation_interval: 30s
+    external_labels:
+      site: mySite
+      cluster: local
+  remote_write:
+  - tls_config:
+      insecure_skip_verify: true
+    url: https://cidata-prometheus-sh.oneitfarm.com/tenant/test-honglei/api/prom/push
 
   ## Additional Prometheus server container arguments
   ##
@@ -1131,36 +1138,20 @@ pushgateway:
 ##
 alertmanagerFiles:
   alertmanager.yml:
-    global:
+    global: {}
       # slack_api_url: ''
-      smtp_smarthost: 'smtp.163.com:25'
-      smtp_from: 'honglei248@163.com'
-      smtp_auth_username: 'honglei248@163.com'
-      smtp_auth_password: 'fnst1234'
-      smtp_require_tls: false
+    
+    receivers:
+      - name: default-receiver
+        # slack_configs:
+        #  - channel: '@you'
+        #    send_resolved: true
+    
     route:
       group_wait: 10s
       group_interval: 5m
       receiver: default-receiver
       repeat_interval: 3h
-    receivers:
-    - name: default-receiver
-      email_configs:
-      - to: '226596391@qq.com'
-      #    global: {}
-      #      # slack_api_url: ''
-      #
-      #    receivers:
-      #      - name: default-receiver
-      #        # slack_configs:
-      #        #  - channel: '@you'
-      #        #    send_resolved: true
-      #
-      #    route:
-      #      group_wait: 10s
-      #      group_interval: 5m
-      #      receiver: default-receiver
-      #      repeat_interval: 3h
 
 ## Prometheus server ConfigMap entries
 ##
@@ -1276,6 +1267,11 @@ serverFiles:
   rules: {}
 
   prometheus.yml:
+    remote_write:
+    - tls_config:
+        insecure_skip_verify: true
+      url: https://cidata-prometheus-sh.oneitfarm.com/tenant/test-honglei/api/prom/push
+          
     rule_files:
       - /etc/config/recording_rules.yml
       - /etc/config/alerting_rules.yml
