@@ -34,13 +34,13 @@
           summary: "{{$labels.instance}}: High network card usage detected"
           description: "{{$labels.instance}}: Networ card usage is above 70% (current value is: {{ $value }}"
       - alert: NodeLoadAverager
-        expr: node_load1 > 10
+        expr: (node_load1{job="kubernetes-service-endpoints"} / count without (cpu) (count without (mode) (node_cpu_seconds_total{job="kubernetes-service-endpoints"}))) > 1
         for: 2m
         labels:
           team: node
         annotations:
           summary: "{{$labels.instance}}: High load average detected"
-          description: "{{$labels.instance}}: Load average is above 10 for at least 2 minute (current value is: {{ $value }}"
+          description: "{{$labels.instance}}: Load average is too high (current value is: {{ $value }}"
       - alert: Node_exporter
         expr: (up{job="kubernetes-nodes"}) != 1
         for: 5m
